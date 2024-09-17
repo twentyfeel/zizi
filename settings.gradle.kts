@@ -3,4 +3,4 @@ plugins {
 }
 
 rootProject.name = "zizi"
-include("core", "ui", "os")
+include("core", "laf", "ui")
