@@ -3,22 +3,15 @@ package com.twentyfeel.laf.core.ui;
 
 import static com.twentyfeel.laf.core.util.UIScale.scale;
 
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.LayoutManager;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.geom.Path2D;
+import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.UIManager;
+import javax.swing.*;
+import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.text.JTextComponent;
 
@@ -30,6 +23,17 @@ import com.twentyfeel.laf.core.util.ZiziUIUtils;
  * This class customizes the appearance and behavior of JComboBox components.
  */
 public class ZiziComboBoxUI extends BasicComboBoxUI {
+
+	protected int focusWidth;
+	protected int arc;
+	protected Color borderColor;
+	protected Color disabledBorderColor;
+	protected Color disabledBackground;
+	protected Color disabledForeground;
+	protected Color buttonBackground;
+	protected Color buttonEditableBackground;
+	protected Color buttonArrowColor;
+	protected Color buttonDisabledArrowColor;
 
 	/**
 	 * Creates a new UI instance for the specified component.
@@ -45,6 +49,32 @@ public class ZiziComboBoxUI extends BasicComboBoxUI {
 	protected void installDefaults() {
 		super.installDefaults();
 		padding = UIScale.scale(padding); // Scale padding
+
+		focusWidth = UIManager.getInt("Component.focusWidth");
+		arc = UIManager.getInt("Component.arc");
+		borderColor = UIManager.getColor("Component.borderColor");
+		disabledBorderColor = UIManager.getColor("Component.disabledBorderColor");
+		disabledBackground = UIManager.getColor("ComboBox.disabledBackground");
+		disabledForeground = UIManager.getColor("ComboBox.disabledForeground");
+		buttonBackground = UIManager.getColor("ComboBox.buttonBackground");
+		buttonEditableBackground = UIManager.getColor("ComboBox.buttonEditableBackground");
+		buttonArrowColor = UIManager.getColor("ComboBox.buttonArrowColor");
+		buttonDisabledArrowColor = UIManager.getColor("ComboBox.buttonDisabledArrowColor");
+
+		padding = UIScale.scale(padding);
+	}
+
+	@Override
+	protected void uninstallDefaults() {
+		super.uninstallDefaults();
+		borderColor = null;
+		disabledBorderColor = null;
+		disabledBackground = null;
+		disabledForeground = null;
+		buttonBackground = null;
+		buttonEditableBackground = null;
+		buttonArrowColor = null;
+		buttonDisabledArrowColor = null;
 	}
 
 	@Override
@@ -58,6 +88,23 @@ public class ZiziComboBoxUI extends BasicComboBoxUI {
 				if (editor != null && padding != null) {
 					editor.setBounds(ZiziUIUtils.adjustRectangle(editor.getBounds(), padding));
 				}
+			}
+		};
+	}
+
+	@Override
+	protected FocusListener createFocusListener() {
+		return new BasicComboBoxUI.FocusHandler() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				super.focusGained(e);
+				if (comboBox != null && comboBox.isEditable()) comboBox.repaint();
+			}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				super.focusLost(e);
+				if (comboBox != null && comboBox.isEditable()) comboBox.repaint();
 			}
 		};
 	}
@@ -83,6 +130,11 @@ public class ZiziComboBoxUI extends BasicComboBoxUI {
 	@Override
 	protected void configureEditor() {
 		super.configureEditor();
+
+		if (editor instanceof JTextComponent) {
+			((JTextComponent) editor).setBorder(BorderFactory.createEmptyBorder());
+		}
+
 		updateEditorColors(); // Update editor colors initially
 	}
 
@@ -91,16 +143,19 @@ public class ZiziComboBoxUI extends BasicComboBoxUI {
 	 */
 	private void updateEditorColors() {
 		boolean enabled = editor.isEnabled();
-		editor.setBackground(enabled ? comboBox.getBackground() : UIManager.getColor("ComboBox.disabledBackground"));
-		editor.setForeground((enabled || editor instanceof JTextComponent) ? comboBox.getForeground() : UIManager.getColor("ComboBox.disabledForeground"));
-		if (editor instanceof JTextComponent) {
-			((JTextComponent) editor).setDisabledTextColor(UIManager.getColor("ComboBox.disabledForeground"));
-		}
+		editor.setBackground(nonUIResource(enabled ? comboBox.getBackground() : disabledBackground));
+		editor.setForeground(nonUIResource((enabled || editor instanceof JTextComponent) ? comboBox.getForeground() : disabledForeground));
+		if (editor instanceof JTextComponent)
+			((JTextComponent) editor).setDisabledTextColor(nonUIResource(disabledForeground));
+	}
+
+	private Color nonUIResource(Color c) {
+		return (c instanceof ColorUIResource) ? new Color(c.getRGB(), true) : c;
 	}
 
 	@Override
 	protected JButton createArrowButton() {
-		return new ZiziArrowButton(); // Use custom arrow button
+		return new ZiziArrowButton(SwingConstants.SOUTH, buttonArrowColor, buttonDisabledArrowColor, null, null);
 	}
 
 	@Override
@@ -113,25 +168,30 @@ public class ZiziComboBoxUI extends BasicComboBoxUI {
 
 			int width = c.getWidth();
 			int height = c.getHeight();
-			float focusWidth = ZiziUIUtils.getFocusWidth(c);
-			float arc = ZiziUIUtils.getComponentArc(c);
+			float focusWidth = (c.getBorder() instanceof ZiziBorder) ? scale((float) this.focusWidth) : 0;
+			float arc = (c.getBorder() instanceof ZiziRoundBorder) ? scale((float) this.arc) : 0;
 			int arrowX = arrowButton.getX();
+			int arrowWidth = arrowButton.getWidth();
+			boolean enabled = comboBox.isEnabled();
+			boolean isLeftToRight = comboBox.getComponentOrientation().isLeftToRight();
 
-			// Paint the background
-			g2.setColor(comboBox.isEnabled() ? c.getBackground() : UIManager.getColor("ComboBox.disabledBackground"));
+			g2.setColor(enabled ? c.getBackground() : disabledBackground);
 			ZiziUIUtils.fillRoundedRectangle(g2, 0, 0, width, height, focusWidth, arc);
 
-			// Paint the button background
-			g2.setColor(UIManager.getColor(comboBox.isEnabled() ? (comboBox.isEditable() ? "ComboBox.buttonEditableBackground" : "ComboBox.buttonBackground") : "ComboBox.disabledBackground"));
-			Shape oldClip = g2.getClip();
-			g2.clipRect(arrowX, 0, width - arrowX, height);
-			ZiziUIUtils.fillRoundedRectangle(g2, 0, 0, width, height, focusWidth, arc);
-			g2.setClip(oldClip);
+			if (enabled) {
+				g2.setColor(comboBox.isEditable() ? buttonEditableBackground : buttonBackground);
+				Shape oldClip = g2.getClip();
+				if (isLeftToRight) g2.clipRect(arrowX, 0, width - arrowX, height);
+				else g2.clipRect(0, 0, arrowX + arrowWidth, height);
+				ZiziUIUtils.fillRoundedRectangle(g2, 0, 0, width, height, focusWidth, arc);
+				g2.setClip(oldClip);
+			}
 
-			// Paint border for editable combo boxes
 			if (comboBox.isEditable()) {
-				g2.setColor(ZiziUIUtils.getBorderColor(comboBox.isEnabled(), false));
-				g2.fill(new Rectangle2D.Float(arrowX, focusWidth, scale(1f), height - (focusWidth * 2)));
+				g2.setColor(enabled ? borderColor : disabledBorderColor);
+				float lw = scale(1f);
+				float lx = isLeftToRight ? arrowX : arrowX + arrowWidth - lw;
+				g2.fill(new Rectangle2D.Float(lx, focusWidth, lw, height - (focusWidth * 2)));
 			}
 		}
 
@@ -140,36 +200,20 @@ public class ZiziComboBoxUI extends BasicComboBoxUI {
 
 	@Override
 	public void paintCurrentValue(Graphics g, Rectangle bounds, boolean hasFocus) {
-		super.paintCurrentValue(g, bounds, false); // Custom painting of current value
+		ListCellRenderer<Object> renderer = comboBox.getRenderer();
+		Component c = renderer.getListCellRendererComponent(listBox, comboBox.getSelectedItem(), -1, false, false);
+		c.setFont(comboBox.getFont());
+		boolean enabled = comboBox.isEnabled();
+		c.setForeground(enabled ? comboBox.getForeground() : disabledForeground);
+		c.setBackground(enabled ? comboBox.getBackground() : disabledBackground);
+		boolean shouldValidate = (c instanceof JPanel);
+		if (padding != null) bounds = ZiziUIUtils.subtract(bounds, padding);
+		currentValuePane.paintComponent(g, c, comboBox, bounds.x, bounds.y, bounds.width, bounds.height, shouldValidate);
 	}
 
-	/**
-	 * Custom arrow button used in the combo box.
-	 */
-	private static class ZiziArrowButton extends BasicArrowButton {
-		ZiziArrowButton() {
-			super(SOUTH, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE);
-			setOpaque(false);
-			setBorder(null);
-		}
-
-		@Override
-		public void paint(Graphics g) {
-			ZiziUIUtils.configureRenderingHints((Graphics2D) g);
-
-			int w = scale(9);
-			int h = scale(5);
-			int x = Math.round((getWidth() - w) / 2f);
-			int y = Math.round((getHeight() - h) / 2f);
-
-			Path2D arrow = new Path2D.Float();
-			arrow.moveTo(x, y);
-			arrow.lineTo(x + w, y);
-			arrow.lineTo(x + (w / 2f), y + h);
-			arrow.closePath();
-
-			g.setColor(UIManager.getColor(isEnabled() ? "ComboBox.buttonArrowColor" : "ComboBox.buttonDisabledArrowColor"));
-			((Graphics2D) g).fill(arrow);
-		}
+	@Override
+	public void paintCurrentValueBackground(Graphics g, Rectangle bounds, boolean hasFocus) {
+		g.setColor(comboBox.isEnabled() ? comboBox.getBackground() : disabledBackground);
+		g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
 	}
 }

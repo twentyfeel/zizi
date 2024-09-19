@@ -21,6 +21,12 @@ import javax.swing.text.JTextComponent;
  */
 public class ZiziBorder extends BasicBorders.MarginBorder {
 
+	protected final int focusWidth = UIManager.getInt("Component.focusWidth");
+	protected final Color focusColor = UIManager.getColor("Component.focusColor");
+	protected final Color borderColor = UIManager.getColor("Component.borderColor");
+	protected final Color disabledBorderColor = UIManager.getColor("Component.disabledBorderColor");
+	protected final Color focusedBorderColor = UIManager.getColor("Component.focusedBorderColor");
+
 	/**
 	 * Paints the border of the component.
 	 *
@@ -60,7 +66,7 @@ public class ZiziBorder extends BasicBorders.MarginBorder {
 	 * @return the focus color
 	 */
 	protected Color getFocusColor(Component component) {
-		return UIManager.getColor("Component.focusColor");
+		return focusColor;
 	}
 
 	/**
@@ -71,7 +77,7 @@ public class ZiziBorder extends BasicBorders.MarginBorder {
 	 */
 	protected Paint getBorderPaint(Component component) {
 		boolean isEnabled = component.isEnabled() && (!(component instanceof JTextComponent) || ((JTextComponent) component).isEditable());
-		return ZiziUIUtils.getBorderColor(isEnabled, isComponentFocused(component));
+		return isEnabled ? (isComponentFocused(component) ? focusedBorderColor : borderColor) : disabledBorderColor;
 	}
 
 	/**
@@ -85,6 +91,16 @@ public class ZiziBorder extends BasicBorders.MarginBorder {
 			JViewport viewport = ((JScrollPane) component).getViewport();
 			Component view = (viewport != null) ? viewport.getView() : null;
 			return view != null && view.hasFocus();
+		} else if (component instanceof JComboBox && ((JComboBox<?>) component).isEditable()) {
+			Component editorComponent = ((JComboBox<?>) component).getEditor().getEditorComponent();
+			return editorComponent != null && editorComponent.hasFocus();
+		} else if (component instanceof JSpinner) {
+			JComponent editor = ((JSpinner) component).getEditor();
+			if (editor instanceof JSpinner.DefaultEditor) {
+				JTextField textField = ((JSpinner.DefaultEditor) editor).getTextField();
+				if (textField != null) return textField.hasFocus();
+			}
+			return false;
 		} else {
 			return component.hasFocus();
 		}
@@ -115,7 +131,7 @@ public class ZiziBorder extends BasicBorders.MarginBorder {
 	 * @return the focus width
 	 */
 	protected float getFocusWidth() {
-		return ZiziUIUtils.getFocusWidth();
+		return scale((float) focusWidth);
 	}
 
 	/**
@@ -124,7 +140,7 @@ public class ZiziBorder extends BasicBorders.MarginBorder {
 	 * @return the line width
 	 */
 	protected float getLineWidth() {
-		return ZiziUIUtils.getLineWidth();
+		return scale(1f);
 	}
 
 	/**

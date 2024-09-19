@@ -1,8 +1,7 @@
 // Copyright (C) 2024 Twentyfeel and contributors. Use of this source code is governed by the Apache License, Version 2.0, that can be found in the LICENSE file.
 package com.twentyfeel.laf.core.ui;
 
-import java.awt.Graphics;
-import java.awt.FontMetrics;
+import java.awt.*;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
@@ -15,6 +14,8 @@ import javax.swing.plaf.basic.BasicLabelUI;
  */
 public class ZiziLabelUI extends BasicLabelUI {
 
+	private Color disabledForeground;
+
 	private static ComponentUI instance;
 
 	/**
@@ -26,6 +27,12 @@ public class ZiziLabelUI extends BasicLabelUI {
 	public static ComponentUI createUI(JComponent c) {
 		if (instance == null) instance = new ZiziLabelUI();
 		return instance;
+	}
+
+	@Override
+	protected void installDefaults(JLabel c) {
+		super.installDefaults(c);
+		disabledForeground = UIManager.getColor("Label.disabledForeground");
 	}
 
 	/**
@@ -41,7 +48,7 @@ public class ZiziLabelUI extends BasicLabelUI {
 	 */
 	@Override
 	protected void paintDisabledText(JLabel l, Graphics g, String s, int textX, int textY) {
-		g.setColor(UIManager.getColor("Label.disabledForeground"));
+		g.setColor(disabledForeground);
 		FontMetrics fm = g.getFontMetrics();
 		int mnemIndex = l.getDisplayedMnemonicIndex();
 

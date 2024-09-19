@@ -1,8 +1,6 @@
 // Copyright (C) 2024 Twentyfeel and contributors. Use of this source code is governed by the Apache License, Version 2.0, that can be found in the LICENSE file.
 package com.twentyfeel.laf.core.ui;
 
-import com.twentyfeel.laf.core.util.ZiziUIUtils;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GradientPaint;
@@ -10,11 +8,23 @@ import java.awt.Graphics;
 import java.awt.Paint;
 import javax.swing.UIManager;
 
+import static com.twentyfeel.laf.core.util.UIScale.scale;
+
 /**
  * A custom border for {@link javax.swing.JButton} components.
  * It applies different border styles based on button state (e.g., default, focused).
  */
 public class ZiziButtonBorder extends ZiziBorder {
+
+	protected final Color startBorderColor = UIManager.getColor("Button.startBorderColor");
+	protected final Color endBorderColor = UIManager.getColor("Button.endBorderColor");
+	protected final Color disabledBorderColor = UIManager.getColor("Button.disabledBorderColor");
+	protected final Color focusedBorderColor = UIManager.getColor("Button.focusedBorderColor");
+	protected final Color defaultStartBorderColor = UIManager.getColor("Button.default.startBorderColor");
+	protected final Color defaultEndBorderColor = UIManager.getColor("Button.default.endBorderColor");
+	protected final Color defaultFocusedBorderColor = UIManager.getColor("Button.default.focusedBorderColor");
+	protected final Color defaultFocusColor = UIManager.getColor("Button.default.focusColor");
+	protected final int arc = UIManager.getInt("Button.arc");
 
 	/**
 	 * Paints the border of the button component.
@@ -41,8 +51,7 @@ public class ZiziButtonBorder extends ZiziBorder {
 	 */
 	@Override
 	protected Color getFocusColor(Component component) {
-		String colorKey = ZiziButtonUI.isDefaultButton(component) ? "Button.default.focusColor" : "Component.focusColor";
-		return UIManager.getColor(colorKey);
+		return ZiziButtonUI.isDefaultButton(component) ? defaultFocusColor : super.getFocusColor(component);
 	}
 
 	/**
@@ -56,15 +65,15 @@ public class ZiziButtonBorder extends ZiziBorder {
 		if (component.isEnabled()) {
 			boolean isDefaultButton = ZiziButtonUI.isDefaultButton(component);
 			if (component.hasFocus()) {
-				return UIManager.getColor(isDefaultButton ? "Button.default.focusedBorderColor" : "Button.focusedBorderColor");
+				return isDefaultButton ? defaultFocusedBorderColor : focusedBorderColor;
 			}
 
-			Color startColor = UIManager.getColor(isDefaultButton ? "Button.default.startBorderColor" : "Button.startBorderColor");
-			Color endColor = UIManager.getColor(isDefaultButton ? "Button.default.endBorderColor" : "Button.endBorderColor");
+			Color startColor = isDefaultButton ? defaultStartBorderColor : startBorderColor;
+			Color endColor = isDefaultButton ? defaultEndBorderColor : endBorderColor;
 
 			return startColor.equals(endColor) ? startColor : new GradientPaint(0, getFocusWidth(), startColor, 0, component.getHeight() - getFocusWidth() - 1f, endColor);
 		} else {
-			return UIManager.getColor("Button.disabledBorderColor");
+			return disabledBorderColor;
 		}
 	}
 
@@ -75,6 +84,6 @@ public class ZiziButtonBorder extends ZiziBorder {
 	 */
 	@Override
 	protected float getArc() {
-		return ZiziUIUtils.getButtonArc();
+		return scale((float) arc);
 	}
 }

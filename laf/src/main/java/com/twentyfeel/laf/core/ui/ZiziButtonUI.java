@@ -16,11 +16,19 @@ import javax.swing.plaf.basic.BasicButtonUI;
 
 import com.twentyfeel.laf.core.util.ZiziUIUtils;
 
+import static com.twentyfeel.laf.core.util.UIScale.scale;
+
 /**
  * Custom UI delegate for {@link javax.swing.JButton}.
  * This class handles the rendering of button components with custom styles.
  */
 public class ZiziButtonUI extends BasicButtonUI {
+
+	protected int focusWidth;
+	protected int arc;
+	protected Color disabledText;
+	protected Color defaultBackground;
+	protected Color defaultForeground;
 
 	private static ComponentUI instance;
 
@@ -35,6 +43,16 @@ public class ZiziButtonUI extends BasicButtonUI {
 			instance = new ZiziButtonUI();
 		}
 		return instance;
+	}
+
+	@Override
+	protected void installDefaults(AbstractButton b) {
+		super.installDefaults(b);
+		focusWidth = UIManager.getInt("Component.focusWidth");
+		arc = UIManager.getInt("Button.arc");
+		disabledText = UIManager.getColor("Button.disabledText");
+		defaultBackground = UIManager.getColor("Button.default.background");
+		defaultForeground = UIManager.getColor("Button.default.foreground");
 	}
 
 	/**
@@ -73,8 +91,8 @@ public class ZiziButtonUI extends BasicButtonUI {
 				try {
 					ZiziUIUtils.configureRenderingHints(g2d);
 
-					float focusWidth = ZiziUIUtils.getFocusWidth();
-					float arc = ZiziUIUtils.getButtonArc();
+					float focusWidth = (component.getBorder() instanceof ZiziBorder) ? scale((float) this.focusWidth) : 0;
+					float arc = (component.getBorder() instanceof ZiziButtonBorder) ? scale((float) this.arc) : 0;
 
 					g2d.setColor(getBackgroundColor(component));
 					ZiziUIUtils.fillRoundedRectangle(g2d, 0, 0, component.getWidth(), component.getHeight(), focusWidth, arc);
@@ -101,7 +119,7 @@ public class ZiziButtonUI extends BasicButtonUI {
 		FontMetrics fontMetrics = graphics.getFontMetrics();
 		int mnemonicIndex = button.getDisplayedMnemonicIndex();
 
-		graphics.setColor(button.getModel().isEnabled() ? getForegroundColor(component) : UIManager.getColor("Button.disabledText"));
+		graphics.setColor(button.getModel().isEnabled() ? getForegroundColor(component) : disabledText);
 
 		// Draw the text
 		graphics.drawString(text, textRect.x + getTextShiftOffset(), textRect.y + fontMetrics.getAscent() + getTextShiftOffset());
@@ -123,7 +141,7 @@ public class ZiziButtonUI extends BasicButtonUI {
 	 */
 	private Color getBackgroundColor(Component component) {
 		boolean isDefaultButton = ZiziButtonUI.isDefaultButton(component);
-		return isDefaultButton ? UIManager.getColor("Button.default.background") : component.getBackground();
+		return isDefaultButton ? defaultBackground : component.getBackground();
 	}
 
 	/**
@@ -134,6 +152,6 @@ public class ZiziButtonUI extends BasicButtonUI {
 	 */
 	private Color getForegroundColor(Component component) {
 		boolean isDefaultButton = ZiziButtonUI.isDefaultButton(component);
-		return isDefaultButton ? UIManager.getColor("Button.default.foreground") : component.getForeground();
+		return isDefaultButton ? defaultForeground : component.getForeground();
 	}
 }

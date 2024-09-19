@@ -1,19 +1,26 @@
 // Copyright (C) 2024 Twentyfeel and contributors. Use of this source code is governed by the Apache License, Version 2.0, that can be found in the LICENSE file.
 package com.twentyfeel.laf.core.util;
 
-import com.twentyfeel.laf.core.ui.ZiziBorder;
-
 import java.awt.*;
 import java.awt.geom.Path2D;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.*;
 
-import static com.twentyfeel.laf.core.util.UIScale.scale;
-
 public class ZiziUIUtils {
 
 	// Flag to determine if Quartz graphics should be used on macOS
 	public static final boolean USE_QUARTZ_GRAPHICS = Boolean.getBoolean("apple.awt.graphics.UseQuartz");
+
+	/**
+	 * Subtracts the given insets from the specified rectangle.
+	 *
+	 * @param r      the rectangle to be adjusted
+	 * @param insets the insets to subtract from the rectangle
+	 * @return a new rectangle with the adjusted dimensions
+	 */
+	public static Rectangle subtract(Rectangle r, Insets insets) {
+		return new Rectangle(r.x + insets.left, r.y + insets.top, r.width - insets.left - insets.right, r.height - insets.top - insets.bottom);
+	}
 
 	/**
 	 * Adjusts the given rectangle by the specified insets.
@@ -48,83 +55,6 @@ public class ZiziUIUtils {
 	public static int getUIInt(String key, int defaultValue) {
 		Object value = UIManager.get(key);
 		return (value instanceof Integer) ? (Integer) value : defaultValue;
-	}
-
-	/**
-	 * Gets the width of the focus indicator, scaled appropriately.
-	 *
-	 * @return the scaled focus width
-	 */
-	public static float getFocusWidth() {
-		return scale((float) getUIInt("Component.focusWidth", 2));
-	}
-
-	/**
-	 * Gets the line width for components, scaled appropriately.
-	 *
-	 * @return the scaled line width
-	 */
-	public static float getLineWidth() {
-		return scale(1f);
-	}
-
-	/**
-	 * Gets the component arc size, scaled appropriately.
-	 *
-	 * @return the scaled component arc size
-	 */
-	public static float getComponentArc() {
-		return scale((float) getUIInt("Component.arc", 5));
-	}
-
-	/**
-	 * Gets the button arc size, scaled appropriately.
-	 *
-	 * @return the scaled button arc size
-	 */
-	public static float getButtonArc() {
-		return scale((float) getUIInt("Button.arc", 6));
-	}
-
-	/**
-	 * Gets the focus width for a component if it uses a ZiziBorder.
-	 *
-	 * @param component the component to check
-	 * @return the focus width if the component uses ZiziBorder, otherwise 0
-	 */
-	public static float getFocusWidth(JComponent component) {
-		return (component.getBorder() instanceof ZiziBorder) ? getFocusWidth() : 0;
-	}
-
-	/**
-	 * Gets the component arc size for a component if it uses a ZiziBorder.
-	 *
-	 * @param component the component to check
-	 * @return the component arc size if the component uses ZiziBorder, otherwise 0
-	 */
-	public static float getComponentArc(JComponent component) {
-		return (component.getBorder() instanceof ZiziBorder) ? getComponentArc() : 0;
-	}
-
-	/**
-	 * Gets the button arc size for a component if it uses a ZiziBorder.
-	 *
-	 * @param component the component to check
-	 * @return the button arc size if the component uses ZiziBorder, otherwise 0
-	 */
-	public static float getButtonArc(JComponent component) {
-		return (component.getBorder() instanceof ZiziBorder) ? getButtonArc() : 0;
-	}
-
-	/**
-	 * Determines the border color based on whether the component is enabled and focused.
-	 *
-	 * @param isEnabled whether the component is enabled
-	 * @param isFocused whether the component is focused
-	 * @return the border color based on the component's state
-	 */
-	public static Color getBorderColor(boolean isEnabled, boolean isFocused) {
-		return UIManager.getColor(isEnabled ? (isFocused ? "Component.focusedBorderColor" : "Component.borderColor") : "Component.disabledBorderColor");
 	}
 
 	/**

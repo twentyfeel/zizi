@@ -7,6 +7,7 @@ import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Color;
 import java.awt.geom.Path2D;
 import javax.swing.AbstractButton;
 import javax.swing.Icon;
@@ -21,6 +22,20 @@ import com.twentyfeel.laf.core.util.ZiziUIUtils;
  * Implements {@link Icon} and {@link UIResource}.
  */
 public class ZiziCheckBoxIcon implements Icon, UIResource {
+
+	protected final int focusWidth = UIManager.getInt("Component.focusWidth");
+	protected final Color focusColor = UIManager.getColor("Component.focusColor");
+	protected final Color borderColor = UIManager.getColor("CheckBox.icon.borderColor");
+	protected final Color disabledBorderColor = UIManager.getColor("CheckBox.icon.disabledBorderColor");
+	protected final Color selectedBorderColor = UIManager.getColor("CheckBox.icon.selectedBorderColor");
+	protected final Color focusedBorderColor = UIManager.getColor("CheckBox.icon.focusedBorderColor");
+	protected final Color selectedFocusedBorderColor = UIManager.getColor("CheckBox.icon.selectedFocusedBorderColor");
+	protected final Color background = UIManager.getColor("CheckBox.icon.background");
+	protected final Color disabledBackground = UIManager.getColor("CheckBox.icon.disabledBackground");
+	protected final Color selectedBackground = UIManager.getColor("CheckBox.icon.selectedBackground");
+	protected final Color checkmarkColor = UIManager.getColor("CheckBox.icon.checkmarkColor");
+	protected final Color disabledCheckmarkColor = UIManager.getColor("CheckBox.icon.disabledCheckmarkColor");
+	protected final int iconSize = 15 + (focusWidth * 2);
 
 	/**
 	 * Paints the icon.
@@ -44,18 +59,18 @@ public class ZiziCheckBoxIcon implements Icon, UIResource {
 			boolean selected = (component instanceof AbstractButton) && ((AbstractButton) component).isSelected();
 
 			if (focused) {
-				g2.setColor(UIManager.getColor("Component.focusColor"));
+				g2.setColor(focusColor);
 				paintFocusBorder(g2);
 			}
 
-			g2.setColor(UIManager.getColor(enabled ? (selected ? (focused ? "CheckBox.icon.selectedFocusedBorderColor" : "CheckBox.icon.selectedBorderColor") : (focused ? "CheckBox.icon.focusedBorderColor" : "CheckBox.icon.borderColor")) : "CheckBox.icon.disabledBorderColor"));
+			g2.setColor(UIManager.getColor(enabled ? (selected ? (focused ? selectedFocusedBorderColor : selectedBorderColor) : (focused ? focusedBorderColor : borderColor)) : disabledBorderColor));
 			paintBorder(g2);
 
-			g2.setColor(UIManager.getColor(enabled ? (selected ? "CheckBox.icon.selectedBackground" : "CheckBox.icon.background") : "CheckBox.icon.disabledBackground"));
+			g2.setColor(enabled ? (selected ? selectedBackground : background) : disabledBackground);
 			paintBackground(g2);
 
 			if (selected) {
-				g2.setColor(UIManager.getColor(enabled ? "CheckBox.icon.checkmarkColor" : "CheckBox.icon.disabledCheckmarkColor"));
+				g2.setColor(enabled ? checkmarkColor : disabledCheckmarkColor);
 				paintCheckmark(g2);
 			}
 		} finally {
@@ -69,7 +84,7 @@ public class ZiziCheckBoxIcon implements Icon, UIResource {
 	 * @param g2 the graphics context
 	 */
 	protected void paintFocusBorder(Graphics2D g2) {
-		g2.fillRoundRect(1, 0, 18, 18, 8, 8);
+		g2.fillRoundRect(1, 0, iconSize - 1, iconSize - 1, 8, 8);
 	}
 
 	/**
@@ -78,7 +93,7 @@ public class ZiziCheckBoxIcon implements Icon, UIResource {
 	 * @param g2 the graphics context
 	 */
 	protected void paintBorder(Graphics2D g2) {
-		g2.fillRoundRect(3, 2, 14, 14, 4, 4);
+		g2.fillRoundRect(focusWidth + 1, focusWidth, 14, 14, 4, 4);
 	}
 
 	/**
@@ -87,7 +102,7 @@ public class ZiziCheckBoxIcon implements Icon, UIResource {
 	 * @param g2 the graphics context
 	 */
 	protected void paintBackground(Graphics2D g2) {
-		g2.fillRoundRect(4, 3, 12, 12, 4, 4);
+		g2.fillRoundRect(focusWidth + 2, focusWidth + 1, 12, 12, 4, 4);
 	}
 
 	/**
@@ -96,12 +111,14 @@ public class ZiziCheckBoxIcon implements Icon, UIResource {
 	 * @param g2 the graphics context
 	 */
 	protected void paintCheckmark(Graphics2D g2) {
-		g2.setStroke(new BasicStroke(1.9f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		Path2D.Float path = new Path2D.Float();
-		path.moveTo(6.5f, 9.5f);
-		path.lineTo(8.6f, 12f);
-		path.lineTo(13.25f, 5.5f);
+		path.moveTo(4.5f, 7.5f);
+		path.lineTo(6.6f, 10f);
+		path.lineTo(11.25f, 3.5f);
+		g2.translate(focusWidth, focusWidth);
+		g2.setStroke(new BasicStroke(1.9f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		g2.draw(path);
+		g2.translate(-focusWidth, -focusWidth);
 	}
 
 	/**
@@ -111,7 +128,7 @@ public class ZiziCheckBoxIcon implements Icon, UIResource {
 	 */
 	@Override
 	public int getIconWidth() {
-		return scale(19);
+		return scale(iconSize);
 	}
 
 	/**
@@ -121,6 +138,6 @@ public class ZiziCheckBoxIcon implements Icon, UIResource {
 	 */
 	@Override
 	public int getIconHeight() {
-		return scale(19);
+		return scale(iconSize);
 	}
 }

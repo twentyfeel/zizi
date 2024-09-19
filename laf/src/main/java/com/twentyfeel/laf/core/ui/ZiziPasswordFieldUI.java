@@ -7,10 +7,12 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import javax.swing.JComponent;
+import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicPasswordFieldUI;
 import javax.swing.text.JTextComponent;
+
+import static com.twentyfeel.laf.core.util.UIScale.scale;
 
 /**
  * Provides the Zizi LaF UI delegate for {@link javax.swing.JPasswordField}.
@@ -21,7 +23,9 @@ import javax.swing.text.JTextComponent;
  * </p>
  */
 public class ZiziPasswordFieldUI extends BasicPasswordFieldUI {
-	private final Handler handler = new Handler();
+	private Handler handler;
+
+	protected int focusWidth;
 
 	/**
 	 * Creates a new instance of {@code ZiziPasswordFieldUI}.
@@ -33,13 +37,19 @@ public class ZiziPasswordFieldUI extends BasicPasswordFieldUI {
 		return new ZiziPasswordFieldUI();
 	}
 
+	@Override
+	protected void installDefaults() {
+		super.installDefaults();
+		focusWidth = UIManager.getInt("Component.focusWidth");
+	}
+
 	/**
 	 * Installs the focus listeners required for custom focus handling.
 	 */
 	@Override
 	protected void installListeners() {
 		super.installListeners();
-		getComponent().addFocusListener(handler);
+		getComponent().addFocusListener(getHandler());
 	}
 
 	/**
@@ -48,7 +58,13 @@ public class ZiziPasswordFieldUI extends BasicPasswordFieldUI {
 	@Override
 	protected void uninstallListeners() {
 		super.uninstallListeners();
-		getComponent().removeFocusListener(handler);
+		getComponent().removeFocusListener(getHandler());
+		handler = null;
+	}
+
+	public Handler getHandler() {
+		if (handler == null) handler = new Handler();
+		return handler;
 	}
 
 	/**
@@ -70,7 +86,7 @@ public class ZiziPasswordFieldUI extends BasicPasswordFieldUI {
 		try {
 			ZiziUIUtils.configureRenderingHints(g2);
 
-			float focusWidth = ZiziUIUtils.getFocusWidth(c);
+			float focusWidth = (c.getBorder() instanceof ZiziBorder) ? scale((float) this.focusWidth) : 0;
 
 			g2.setColor(c.getBackground());
 			ZiziUIUtils.fillRoundedRectangle(g2, 0, 0, c.getWidth(), c.getHeight(), focusWidth, 0);

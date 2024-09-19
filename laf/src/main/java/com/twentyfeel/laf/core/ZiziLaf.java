@@ -72,25 +72,23 @@ public abstract class ZiziLaf extends BasicLookAndFeel {
 		UIDefaults defaults = getBaseLookAndFeel().getDefaults();
 		Color controlColor = defaults.getColor("control");
 
-		setEditorPaneDefaults(defaults, controlColor);
+		defaults.put("EditorPane.disabledBackground", controlColor);
+		defaults.put("EditorPane.inactiveBackground", controlColor);
+		defaults.put("FormattedTextField.disabledBackground", controlColor);
+		defaults.put("PasswordField.disabledBackground", controlColor);
+		defaults.put("TextArea.disabledBackground", controlColor);
+		defaults.put("TextArea.inactiveBackground", controlColor);
+		defaults.put("TextField.disabledBackground", controlColor);
+		defaults.put("TextPane.disabledBackground", controlColor);
+		defaults.put("TextPane.inactiveBackground", controlColor);
+
+		defaults.put("Spinner.disabledBackground", controlColor);
+		defaults.put("Spinner.disabledForeground", controlColor);
+
 		setFontDefaults(defaults);
 		loadPropertiesToDefaults(defaults);
 
 		return defaults;
-	}
-
-	/**
-	 * Sets default background colors for various text components.
-	 *
-	 * @param defaults     the UIDefaults to update
-	 * @param controlColor the control color to use as the background color
-	 */
-	private void setEditorPaneDefaults(UIDefaults defaults, Color controlColor) {
-		String[] textComponentKeys = {"EditorPane.disabledBackground", "EditorPane.inactiveBackground", "FormattedTextField.disabledBackground", "PasswordField.disabledBackground", "TextArea.disabledBackground", "TextArea.inactiveBackground", "TextField.disabledBackground", "TextPane.disabledBackground", "TextPane.inactiveBackground"};
-
-		for (String key : textComponentKeys) {
-			defaults.put(key, controlColor);
-		}
 	}
 
 	/**
@@ -273,11 +271,11 @@ public abstract class ZiziLaf extends BasicLookAndFeel {
 			return parseInstance(value);
 		}
 
-		if (key.endsWith(".margin") || key.endsWith(".padding")) {
+		if (key.endsWith(".margin") || key.endsWith(".padding") || key.endsWith("Insets")) {
 			return parseInsets(value);
 		}
 
-		if (key.endsWith("Size")) {
+		if (key.endsWith("Size") && !key.equals("SplitPane.dividerSize")) {
 			return parseSize(value);
 		}
 

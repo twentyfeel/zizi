@@ -7,10 +7,12 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import javax.swing.JComponent;
+import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicTextFieldUI;
 import javax.swing.text.JTextComponent;
+
+import static com.twentyfeel.laf.core.util.UIScale.scale;
 
 /**
  * Provides the Zizi LaF UI delegate for {@link javax.swing.JTextField}.
@@ -21,7 +23,9 @@ import javax.swing.text.JTextComponent;
  */
 public class ZiziTextFieldUI extends BasicTextFieldUI {
 
-	private final Handler focusHandler = new Handler();
+	private Handler focusHandler;
+
+	protected int focusWidth;
 
 	/**
 	 * Creates a new instance of ZiziTextFieldUI.
@@ -34,15 +38,30 @@ public class ZiziTextFieldUI extends BasicTextFieldUI {
 	}
 
 	@Override
+	protected void installDefaults() {
+		super.installDefaults();
+		focusWidth = UIManager.getInt("Component.focusWidth");
+	}
+
+	@Override
 	protected void installListeners() {
 		super.installListeners();
-		getComponent().addFocusListener(focusHandler);
+		getComponent().addFocusListener(getFocusHandler());
 	}
 
 	@Override
 	protected void uninstallListeners() {
 		super.uninstallListeners();
-		getComponent().removeFocusListener(focusHandler);
+		getComponent().removeFocusListener(getFocusHandler());
+
+		focusHandler = null;
+	}
+
+	public Handler getFocusHandler() {
+		if (focusHandler == null) {
+			focusHandler = new Handler();
+		}
+		return focusHandler;
 	}
 
 	@Override
@@ -55,7 +74,7 @@ public class ZiziTextFieldUI extends BasicTextFieldUI {
 		try {
 			ZiziUIUtils.configureRenderingHints(g2);
 
-			float focusWidth = ZiziUIUtils.getFocusWidth(textComponent);
+			float focusWidth = (textComponent.getBorder() instanceof ZiziBorder) ? scale((float) this.focusWidth) : 0;
 			g2.setColor(textComponent.getBackground());
 
 			ZiziUIUtils.fillRoundedRectangle(g2, 0, 0, textComponent.getWidth(), textComponent.getHeight(), focusWidth, 0);

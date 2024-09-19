@@ -3,6 +3,10 @@ package com.twentyfeel.laf.core.ui;
 
 import com.twentyfeel.laf.core.util.ZiziUIUtils;
 
+import javax.swing.*;
+
+import static com.twentyfeel.laf.core.util.UIScale.scale;
+
 /**
  * A border with rounded corners for various components (e.g. {@link javax.swing.JComboBox}).
  * <p>
@@ -11,6 +15,8 @@ import com.twentyfeel.laf.core.util.ZiziUIUtils;
  * </p>
  */
 public class ZiziRoundBorder extends ZiziBorder {
+
+	protected final int arc = UIManager.getInt("Component.arc");
 
 	/**
 	 * Returns the arc size for the rounded border.
@@ -23,6 +29,6 @@ public class ZiziRoundBorder extends ZiziBorder {
 	 */
 	@Override
 	protected float getArc() {
-		return ZiziUIUtils.getComponentArc();
+		return scale((float) arc);
 	}
 }

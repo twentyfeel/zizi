@@ -25,7 +25,7 @@ import javax.swing.plaf.basic.BasicScrollPaneUI;
  * </p>
  */
 public class ZiziScrollPaneUI extends BasicScrollPaneUI {
-	private final Handler handler = new Handler();
+	private Handler handler;
 
 	/**
 	 * Creates a new instance of ZiziScrollPaneUI.
@@ -43,7 +43,7 @@ public class ZiziScrollPaneUI extends BasicScrollPaneUI {
 
 		JViewport viewport = scrollpane.getViewport();
 		if (viewport != null) {
-			viewport.addContainerListener(handler);
+			viewport.addContainerListener(getHandler());
 		}
 	}
 
@@ -53,8 +53,14 @@ public class ZiziScrollPaneUI extends BasicScrollPaneUI {
 
 		JViewport viewport = scrollpane.getViewport();
 		if (viewport != null) {
-			viewport.removeContainerListener(handler);
+			viewport.removeContainerListener(getHandler());
 		}
+		handler = null;
+	}
+
+	public Handler getHandler() {
+		if (handler == null) handler = new Handler();
+		return handler;
 	}
 
 	@Override
@@ -65,19 +71,19 @@ public class ZiziScrollPaneUI extends BasicScrollPaneUI {
 		JViewport newViewport = (JViewport) e.getNewValue();
 
 		if (oldViewport != null) {
-			oldViewport.removeContainerListener(handler);
+			oldViewport.removeContainerListener(getHandler());
 
 			Component oldView = oldViewport.getView();
 			if (oldView != null) {
-				oldView.removeFocusListener(handler);
+				oldView.removeFocusListener(getHandler());
 			}
 		}
 		if (newViewport != null) {
-			newViewport.addContainerListener(handler);
+			newViewport.addContainerListener(getHandler());
 
 			Component newView = newViewport.getView();
 			if (newView != null) {
-				newView.addFocusListener(handler);
+				newView.addFocusListener(getHandler());
 			}
 		}
 	}
